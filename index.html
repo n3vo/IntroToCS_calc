@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מחשבון ציון - מבוא למדעי המחשב</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Hebrew:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans Hebrew', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+            padding: 20px;
+            direction: rtl;
+            text-align: right;
+        }
+
+        .calculator {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 500px;
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+
+        h1 {
+            color: #1f2937;
+            margin-bottom: 2rem;
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            padding: 0 30px;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #374151;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        input:focus {
+            border-color: #6366f1;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .result {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border-radius: 12px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: center;
+            display: none;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 0.3s ease;
+        }
+
+        .result.visible {
+            display: block;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .pass {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        .fail {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            animation: shake 0.5s;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h1>מחשבון ציון - מבוא למדעי המחשב סמסטר 2025 א'</h1>
+        
+        <div class="input-group">
+            <label for="maman11">ממ"ן 11 (1 נק'):</label>
+            <input type="number" id="maman11" min="0" max="100" placeholder="הכנס ציון">
+        </div>
+        
+        <div class="input-group">
+            <label for="maman12">ממ"ן 12 (3 נק'):</label>
+            <input type="number" id="maman12" min="0" max="100" placeholder="הכנס ציון">
+        </div>
+        
+        <div class="input-group">
+            <label for="maman13">ממ"ן 13 (3 נק'):</label>
+            <input type="number" id="maman13" min="0" max="100" placeholder="הכנס ציון">
+        </div>
+        
+        <div class="input-group">
+            <label for="maman14">ממ"ן 14 (3 נק'):</label>
+            <input type="number" id="maman14" min="0" max="100" placeholder="הכנס ציון">
+        </div>
+        
+        <div class="input-group">
+            <label for="exam">ציון בחינה סופית:</label>
+            <input type="number" id="exam" min="0" max="100" required placeholder="הכנס ציון בחינה">
+        </div>
+        
+        <button onclick="calculateGrade()">חשב/י ציון סופי</button>
+        
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        function calculateGrade() {
+            const exam = parseFloat(document.getElementById('exam').value) || 0;
+            const mamans = [
+                { score: parseFloat(document.getElementById('maman11').value) || 0, weight: 1 },
+                { score: parseFloat(document.getElementById('maman12').value) || 0, weight: 3 },
+                { score: parseFloat(document.getElementById('maman13').value) || 0, weight: 3 },
+                { score: parseFloat(document.getElementById('maman14').value) || 0, weight: 3 }
+            ];
+
+            let finalGrade = 0;
+
+            if (exam < 60) {
+                finalGrade = exam;
+            } else {
+                let bestScore = calculateBestCombination(mamans, exam);
+                finalGrade = bestScore;
+            }
+
+            showResult(finalGrade);
+        }
+
+        function calculateBestCombination(mamans, examScore) {
+            let maxScore = 0;
+            const droppable = mamans.filter(m => m.score < examScore);
+
+            for (let i = 0; i <= Math.min(2, droppable.length); i++) {
+                const combinations = getCombinations(droppable, i);
+                
+                for (let combo of combinations) {
+                    const remaining = mamans.filter(m => !combo.includes(m));
+                    const totalWeight = remaining.reduce((sum, m) => sum + m.weight, 0);
+                    
+                    if (totalWeight >= 6) {
+                        const assignmentPoints = remaining.reduce((sum, m) => sum + (m.score * m.weight), 0);
+                        const examWeight = 100 - totalWeight;
+                        const currentScore = (assignmentPoints + examScore * examWeight) / 100;
+                        
+                        if (currentScore > maxScore) {
+                            maxScore = currentScore;
+                        }
+                    }
+                }
+            }
+
+            return maxScore;
+        }
+
+        function getCombinations(arr, k) {
+            if (k === 0) return [[]];
+            const combos = [];
+            
+            for (let i = 0; i < arr.length; i++) {
+                const head = arr.slice(i, i + 1);
+                const tailCombos = getCombinations(arr.slice(i + 1), k - 1);
+                
+                for (const tail of tailCombos) {
+                    combos.push(head.concat(tail));
+                }
+            }
+            
+            return combos;
+        }
+
+        function showResult(grade) {
+            const resultDiv = document.getElementById('result');
+            const exactScore = grade.toFixed(2);
+            const status = grade >= 60 ? 'עברת! 🎉' : 'לא עברת 😢';
+            
+            resultDiv.textContent = `ציון סופי: ${exactScore} - ${status}`;
+            resultDiv.className = 'result visible ' + (grade >= 60 ? 'pass' : 'fail');
+
+            if (grade >= 60) {
+                triggerConfetti();
+            }
+        }
+
+        function triggerConfetti() {
+            const count = 200;
+            const defaults = {
+                origin: { y: 0.7 },
+                zIndex: 10000
+            };
+
+            function fire(particleRatio, opts) {
+                confetti(Object.assign({}, defaults, opts, {
+                    particleCount: Math.floor(count * particleRatio)
+                }));
+            }
+
+            fire(0.25, { spread: 26, startVelocity: 55 });
+            fire(0.2, { spread: 60 });
+            fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+            fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+            fire(0.1, { spread: 120, startVelocity: 45 });
+        }
+
+        // Handle Enter key submission
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                if(e.key === 'Enter') {
+                    e.preventDefault();
+                    calculateGrade();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
